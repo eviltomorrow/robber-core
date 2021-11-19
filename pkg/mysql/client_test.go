@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	tests.InitLogConfig("/tmp/lauriston-tmp/data.log")
+	tests.InitLogConfig("/var/log/robber-datasource-sina/data.log")
 }
 
 func TestCreateClient(t *testing.T) {
