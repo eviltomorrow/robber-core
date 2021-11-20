@@ -21,12 +21,13 @@ var (
 	DefaultTimeout = 10 * time.Second
 )
 
-func Build() {
+func Build() error {
 	pool, err := build(DSN)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	DB = pool
+	return err
 }
 
 func Close() error {
