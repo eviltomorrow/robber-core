@@ -19,12 +19,13 @@ var (
 var DefaultTimeout = 10 * time.Second
 
 // Build build mysql
-func Build() {
+func Build() error {
 	pool, err := buildMySQL(DSN)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	DB = pool
+	return nil
 }
 
 // Close close mysql
