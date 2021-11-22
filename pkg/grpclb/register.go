@@ -58,6 +58,8 @@ func Register(service string, host string, port int, endpoints []string, ttl int
 	if err != nil {
 		return nil, err
 	}
+
+	var signal = make(chan struct{}, 1)
 	go func() {
 	keep:
 		for {
@@ -71,22 +73,29 @@ func Register(service string, host string, port int, endpoints []string, ttl int
 				if k != nil {
 					_ = k
 				}
+			case <-signal:
+				return
 			}
 		}
 
 	release:
-		zlog.Error("Etcd status is abnormal: register service info retrying", zap.String("key", key), zap.String("value", value))
+		zlog.Error("Etcd status is offline: register service retrying...", zap.String("key", key), zap.String("value", value))
 		keepAlive, leaseID, err = registerRetry(client, key, value, ttl)
 		if err != nil {
-			zlog.Error("Retrying service info to etcd failure", zap.Error(err))
-			time.Sleep(60 * time.Second)
+			zlog.Error("Retrying register service to etcd failure", zap.Error(err))
+			time.Sleep(10 * time.Second)
 			goto release
 		}
-		zlog.Info("Etcd status is ok: register service info complete", zap.String("key", key), zap.String("value", value))
-
+		zlog.Info("Etcd status is online: register service complete", zap.String("key", key), zap.String("value", value))
+		goto keep
 	}()
 	close := func() {
-		_, _ = client.Revoke(context.Background(), *leaseID)
+		signal <- struct{}{}
+		if leaseID != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_, _ = client.Revoke(ctx, *leaseID)
+		}
 	}
 
 	return close, nil
