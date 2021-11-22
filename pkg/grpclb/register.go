@@ -76,28 +76,39 @@ func Register(service string, host string, port int, endpoints []string, ttl int
 
 	release:
 		zlog.Error("Etcd status is abnormal: register service info retrying", zap.String("key", key), zap.String("value", value))
-		leaseResp, err := client.Grant(context.Background(), ttl)
+		keepAlive, leaseID, err = registerRetry(client, key, value, ttl)
 		if err != nil {
+			zlog.Error("Retrying service info to etcd failure", zap.Error(err))
+			time.Sleep(60 * time.Second)
 			goto release
 		}
-
-		key, value := fmt.Sprintf("/%s/%s:%d", service, host, port), fmt.Sprintf("%s:%d", host, port)
-		_, err = client.Put(context.Background(), key, value, clientv3.WithLease(leaseResp.ID))
-		if err != nil {
-			goto release
-		}
-
-		keepAlive, err = client.KeepAlive(context.Background(), leaseResp.ID)
-		if err != nil {
-			goto release
-		}
-		leaseID = &leaseResp.ID
 		zlog.Info("Etcd status is ok: register service info complete", zap.String("key", key), zap.String("value", value))
-		goto keep
+
 	}()
 	close := func() {
-		_, _ = client.Revoke(ctx, *leaseID)
+		_, _ = client.Revoke(context.Background(), *leaseID)
 	}
 
 	return close, nil
+}
+
+func registerRetry(client *clientv3.Client, key, value string, ttl int64) (<-chan *clientv3.LeaseKeepAliveResponse, *clientv3.LeaseID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	leaseResp, err := client.Grant(ctx, ttl)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	_, err = client.Put(context.Background(), key, value, clientv3.WithLease(leaseResp.ID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	keepAlive, err := client.KeepAlive(context.Background(), leaseResp.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return keepAlive, &leaseResp.ID, nil
 }
