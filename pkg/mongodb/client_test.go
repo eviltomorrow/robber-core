@@ -11,7 +11,7 @@ func init() {
 }
 
 func TestCreateClient(t *testing.T) {
-	DSN = "mongodb://localhost:27017"
+	DSN = "mongodb://127.0.0.1:27017"
 	MaxOpen = 10
 	Build()
 }

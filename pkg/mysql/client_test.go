@@ -7,11 +7,11 @@ import (
 )
 
 func init() {
-	tests.InitLogConfig("/var/log/robber-datasource/data.log")
+	tests.InitLogConfig("/tmp/robber-datasource/data.log")
 }
 
 func TestCreateClient(t *testing.T) {
-	DSN = "root:root@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=true&loc=Local"
+	DSN = "root:root@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=true&loc=Local"
 	MaxOpen = 10
 	MinOpen = 5
 	Build()
