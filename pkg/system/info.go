@@ -29,10 +29,11 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("get executeable path failure, nest error: %v", err))
 	}
-	RootDir, err = filepath.Abs(path)
+	path, err = filepath.Abs(path)
 	if err != nil {
 		panic(fmt.Errorf("abs RootDir failure, nest error: %v", err))
 	}
+	RootDir = filepath.Dir(path)
 
 	name, err := os.Hostname()
 	if err == nil {
