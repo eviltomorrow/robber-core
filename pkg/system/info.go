@@ -1,6 +1,7 @@
 package system
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -48,4 +49,19 @@ func init() {
 	if err == nil {
 		IP = localIP
 	}
+}
+
+func GetInfo() string {
+	var data = make(map[string]interface{}, 8)
+	data["RootDir"] = RootDir
+	data["Pid"] = Pid
+	data["LaunchTime"] = LaunchTime
+	data["HostName"] = HostName
+	data["OS"] = OS
+	data["Arch"] = Arch
+	data["RunningTime"] = RunningTime()
+	data["IP"] = IP
+
+	buf, _ := json.Marshal(data)
+	return string(buf)
 }
