@@ -25,9 +25,13 @@ var (
 )
 
 func init() {
-	path, err := os.Executable()
+	var (
+		path string
+		err  error
+	)
+	path, err = os.Executable()
 	if err != nil {
-		panic(fmt.Errorf("get executeable path failure, nest error: %v", err))
+		panic(fmt.Errorf("get Executable path failure, nest error: %v", err))
 	}
 	path, err = filepath.Abs(path)
 	if err != nil {
