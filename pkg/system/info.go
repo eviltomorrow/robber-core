@@ -12,8 +12,8 @@ import (
 )
 
 var (
+	RootDir     string
 	Pid         = os.Getpid()
-	Pwd         string
 	LaunchTime  = time.Now()
 	HostName    string
 	OS          = runtime.GOOS
@@ -24,12 +24,15 @@ var (
 	IP string
 )
 
-func InitEnv() error {
-	path, err := filepath.Abs(".")
+func init() {
+	path, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("get current dir failure, nest error: %v", err)
+		panic(fmt.Errorf("get executeable path failure, nest error: %v", err))
 	}
-	Pwd = path
+	RootDir, err = filepath.Abs(path)
+	if err != nil {
+		panic(fmt.Errorf("abs RootDir failure, nest error: %v", err))
+	}
 
 	name, err := os.Hostname()
 	if err == nil {
@@ -40,5 +43,4 @@ func InitEnv() error {
 	if err == nil {
 		IP = localIP
 	}
-	return nil
 }
