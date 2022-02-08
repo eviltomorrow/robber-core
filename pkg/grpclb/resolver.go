@@ -2,7 +2,6 @@ package grpclb
 
 import (
 	"context"
-	"sync"
 
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -10,7 +9,7 @@ import (
 )
 
 type Resolver struct {
-	sync.RWMutex
+	// sync.RWMutex
 	Client    *clientv3.Client
 	cc        resolver.ClientConn
 	prefix    string
@@ -58,14 +57,14 @@ func (r *Resolver) watcher() {
 }
 
 func (r *Resolver) setAddress(key, address string) {
-	r.Lock()
-	defer r.Unlock()
+	// r.Lock()
+	// defer r.Unlock()
 	r.addresses[key] = resolver.Address{Addr: string(address)}
 }
 
 func (r *Resolver) delAddress(key string) {
-	r.Lock()
-	defer r.Unlock()
+	// r.Lock()
+	// defer r.Unlock()
 	delete(r.addresses, key)
 }
 
